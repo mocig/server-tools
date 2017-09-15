@@ -1,0 +1,62 @@
+#!/usr/bin/perl -W
+use strict;
+
+my $mynet='NETWORK';
+my $myif='lxc-bridge-nat';
+my @ips=[];
+local *DB;
+
+if($#ARGV < 0){ print "Usage: $0 <containername>\n"; exit(1); }
+if(-e "/var/lib/lxc/$ARGV[0]"){ print "Container $ARGV[0] already exists.\n"; exit(1); }
+print "Creating rootfs, this may take a while!! - Get some coffee!\n";
+`lxc-create -n $ARGV[0] -t debian -- -r stretch`;
+if(-e "/var/lib/lxc/ips"){
+        open(DB,"/var/lib/lxc/ips");
+                @ips = <DB>;
+        close(DB);
+}
+my $nextip=$#ips+2;
+print "MOCI: Next free IP: $mynet.$nextip\n";
+print "Writing network config\n";
+open(DB, ">> /var/lib/lxc/$ARGV[0]/config");
+print DB "lxc.network.type = veth
+lxc.network.flags = up
+lxc.network.link = $myif
+lxc.network.name = eth0
+lxc.network.ipv4 = $mynet.$nextip/24
+lxc.network.ipv4.gateway = $mynet.1
+";
+close(DB);
+open(DB, "> /var/lib/lxc/$ARGV[0]/rootfs/etc/network/interfaces");
+print DB "
+auto lo
+iface lo inet loopback
+
+auto eth0
+iface eth0 inet static
+        address $mynet.$nextip
+        netmask 255.255.255.0
+        gateway $mynet.1
+";
+close(DB);
+`echo nameserver $mynet.1 > /var/lib/lxc/$ARGV[0]/rootfs/etc/resolv.conf`;
+`echo $mynet.$nextip,$ARGV[0] >> /var/lib/lxc/ips`;
+print "Removing Systemd\n";
+`lxc-start -d -n $ARGV[0]`;
+`lxc-attach -n $ARGV[0] -- apt-get update`;
+`lxc-attach -n $ARGV[0] -- apt-get -y install sysvinit-core`;
+`lxc-attach -n $ARGV[0] --  cp /usr/share/sysvinit/inittab /etc/inittab`;
+`lxc-stop -n $ARGV[0]`;
+`lxc-start -d -n $ARGV[0]`;
+`lxc-attach -n $ARGV[0] -- apt-get -y remove --purge --auto-remove systemd*`;
+print "Make sure it gets not reinstalled\n";
+`echo 'Package: systemd\nPin: release *\nPin-Priority: -1' > /var/lib/lxc/$ARGV[0]/rootfs/etc/apt/preferences.d/systemd`;
+print "Do you want to start this one at system boot? [y|N]:\n";
+my $input = <STDIN>;
+chomp $input;
+if($input eq 'y'){
+        print "Setting autostart for container\n";
+        `echo lxc.start.auto = 1 >> /var/lib/lxc/$ARGV[0]/config`;
+}
+print "Add done. You can attach to $ARGV[0] with 'lxc-attach -n $ARGV[0]' now. Internal IP: $mynet.$nextip\n";
+exit(0);
