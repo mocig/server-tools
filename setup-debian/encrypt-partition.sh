@@ -1,4 +1,4 @@
-#!/bin/bash -e
+#!/bin/bash
 if [ $# != "3" ]; then
 	echo "Usage: $0: <dev> <mountpoint> <name>"
 	exit 1
@@ -24,7 +24,7 @@ if [ -e /dev/mapper/$3 ]; then
 	exit 1
 fi
 apt-get update -qq
-apt-get install -y -qq cryptsetup
+apt-get install -y -qq cryptsetup pv
 mkdir -p $2
 cryptsetup -y -v luksFormat $1
 cryptsetup luksOpen $1 $3
