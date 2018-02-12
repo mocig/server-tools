@@ -3,20 +3,31 @@ use strict;
 
 my $mynet='NETWORK';
 my $myif='lxc-bridge-nat';
-my @ips=[];
+my @ips=['zero','bridge'];
 local *DB;
 
 if($#ARGV < 0){ print "Usage: $0 <containername>\n"; exit(1); }
+if(-e "/var/lib/lxc/ips"){
+        open(DB,"/var/lib/lxc/ips");
+                while(defined(my $ip=<DB>)){
+			print "$ip";
+                        my @TMP=split(/,/,$ip);
+                        @TMP=split(/\./,$TMP[0]);
+                        $ips[$TMP[3]]='taken';
+                }
+        close(DB);
+}
+my $nextip=2; 
+while(defined($ips[$nextip])){
+        $nextip++;
+}
+if($nextip>254){
+	print "More than 254 IPs in use, script asumes class-c, sorry\n"; exit(1); 
+}
+print "MOCI: Next free IP: $mynet.$nextip\n";
 if(-e "/var/lib/lxc/$ARGV[0]"){ print "Container $ARGV[0] already exists.\n"; exit(1); }
 print "Creating rootfs, this may take a while!! - Get some coffee!\n";
 `lxc-create -n $ARGV[0] -t debian -- -r stretch`;
-if(-e "/var/lib/lxc/ips"){
-        open(DB,"/var/lib/lxc/ips");
-                @ips = <DB>;
-        close(DB);
-}
-my $nextip=$#ips+2;
-print "MOCI: Next free IP: $mynet.$nextip\n";
 print "Writing network config\n";
 open(DB, ">> /var/lib/lxc/$ARGV[0]/config");
 print DB "lxc.network.type = veth
