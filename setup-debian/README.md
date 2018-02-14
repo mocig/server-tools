@@ -14,4 +14,11 @@ setup-lxc.sh
 
 	Asumes root, and a clean system (f.e. it will overwrite /etc/dnsmasq.conf)
 ```
+setup-ucspi-tcp6.sh
+	Usage: ./setup-ucspi-tcp6.sh
+
+	Compiles and installs ucspi-tcp6 (http://www.fehcom.de/ipnet/ucspi-tcp6.html)
+
+	Asumes root, will overwrite previous installed ucspi programms in /usr/local/bin
+```
 
