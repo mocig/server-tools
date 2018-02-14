@@ -23,4 +23,12 @@ setup-ucspi-tcp6.sh
 
 	Asumes root, will overwrite previous installed ucspi programms in /usr/local/bin
 ```
+setup-djbdns.sh
+```
+	Usage: ./setup-djbdns.sh
 
+	Compiles and installs djbdns (https://github.com/henryk/tinydnssec)
+
+	Asumes root, expects uscpi-tcp installed. Will also ask to setup tinydns on
+	servers 'main IP' (= 1st IP attached on IF used for default route)
+```
