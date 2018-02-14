@@ -7,6 +7,7 @@ encrypt-partition.sh
 	Expects to run as root. Places a mount-<name>.sh in ~/ for mount aswell
 ```
 setup-lxc.sh
+```
 	Usage: ./setup-lxc.sh lxc-network
 	
 	Installs lxc and dnsmasq, configures bridge interface, network, nat
@@ -15,6 +16,7 @@ setup-lxc.sh
 	Asumes root, and a clean system (f.e. it will overwrite /etc/dnsmasq.conf)
 ```
 setup-ucspi-tcp6.sh
+```
 	Usage: ./setup-ucspi-tcp6.sh
 
 	Compiles and installs ucspi-tcp6 (http://www.fehcom.de/ipnet/ucspi-tcp6.html)
