@@ -1,3 +1,6 @@
+'''OUTDATED. WAS WRITTEN FOR DEBIAN STRETCH. NOT USING DEBIAN ANYMORE.'''
+
+
 encrypt-partition.sh
 ```
 	Usage: ./encrypt-partition.sh: <dev> <mountpoint> <name>
